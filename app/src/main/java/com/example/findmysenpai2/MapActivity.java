@@ -3,7 +3,6 @@ package com.example.findmysenpai2;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationProvider;
 import android.os.Bundle;
 import android.os.Looper;
 
@@ -13,7 +12,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationAvailability;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
@@ -23,13 +21,15 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private static final int REQUEST_LOCATION_INTERVAL = 5000;
 
     private GoogleMap googleMap;
+    private Marker userMarker;  // our marker on the map
 
 
     @Override
@@ -51,11 +51,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         provider.getLastLocation().addOnCompleteListener(locationTask -> {
             Location location = locationTask.getResult();
             LatLng position = new LatLng(location.getLatitude(), location.getLongitude());
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 15));
-        });
 
-        // Listen for whenever our location changes
-        this.listenForLocationUpdates();
+            this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 15));
+            this.userMarker = googleMap.addMarker(new MarkerOptions().position(position).title("Me"));
+
+            // Listen for whenever our location changes and update the marker accordingly
+            this.startUserLocationTask();
+        });
     }
 
     private void forceLocationPermissions() {
@@ -66,12 +68,25 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
     }
 
-    private void listenForLocationUpdates() {
+    private void startUserLocationTask() {
         FusedLocationProviderClient provider = LocationServices.getFusedLocationProviderClient(this);
+
         provider.requestLocationUpdates(LocationRequest.create().setInterval(REQUEST_LOCATION_INTERVAL), new LocationCallback() {
             @Override
             public void onLocationResult(@NonNull LocationResult locationResult) {
-                // TODO: update user marker location
+                Marker currentUserMarker = MapActivity.this.userMarker;
+                Location location = locationResult.getLastLocation();
+
+                LatLng position = new LatLng(location.getLatitude(), location.getLongitude());
+                LatLng lastPosition = currentUserMarker.getPosition();
+
+                MapActivity.this.userMarker.setPosition(position);
+
+                // We should readjust the camera back to our marker if the person is moving.
+                boolean readjustCamera = Math.abs(position.latitude - lastPosition.latitude) > 0.01d || Math.abs(position.longitude - lastPosition.longitude) > 0.01d;
+                if (readjustCamera) {
+                    MapActivity.this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 15));
+                }
             }
         }, Looper.getMainLooper());
     }
