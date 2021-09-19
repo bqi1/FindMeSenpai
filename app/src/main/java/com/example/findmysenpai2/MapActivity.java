@@ -84,8 +84,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     LatLng position = new LatLng(location.getLatitude(), location.getLongitude());
 
                     MapActivity.this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 15));
-                    MapActivity.this.userMarker = googleMap.addMarker(new MarkerOptions().position(position).title("Me"));
-                    MapActivity.this.loadAvatar();
+                    MapActivity.this.userMarker = googleMap.addMarker(new MarkerOptions().position(position));
+                    MapActivity.this.loadUserMarkerData();
                 }
 
 
@@ -151,7 +151,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 });
     }
 
-    private void loadAvatar() {
+    private void loadUserMarkerData() {
         String deviceId = Settings.Secure.getString(this.getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -165,6 +165,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 if (descriptor != null) {
                     this.userMarker.setIcon(descriptor);
                 }
+                this.userMarker.setTitle(documentSnapshot.getString("name"));
             }
         });
     }
