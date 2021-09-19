@@ -8,4 +8,7 @@ public class Senpai {
     public String name = "";
     public String device = "";
     public String base64Image = "";
+
+    private double longitute;
+    private double latitute;
 }

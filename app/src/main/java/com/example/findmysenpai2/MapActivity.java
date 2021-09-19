@@ -2,9 +2,13 @@ package com.example.findmysenpai2;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
+import android.provider.Settings;
+import android.util.Base64;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,9 +24,17 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -31,11 +43,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private GoogleMap googleMap;
     private Marker userMarker;  // our marker on the map
 
+    private Set<Marker> otherMarkers;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.map);
+
+        this.otherMarkers = new HashSet<>();
 
         SupportMapFragment mapFragment = (SupportMapFragment)this.getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -51,9 +67,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         provider.getLastLocation().addOnCompleteListener(locationTask -> {
             Location location = locationTask.getResult();
             LatLng position = new LatLng(location.getLatitude(), location.getLongitude());
+            this.updateNetworkLocation(position);
 
             this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 15));
             this.userMarker = googleMap.addMarker(new MarkerOptions().position(position).title("Me"));
+            this.loadAvatar();
 
             // Listen for whenever our location changes and update the marker accordingly
             this.startUserLocationTask();
@@ -87,8 +105,85 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 if (readjustCamera) {
                     MapActivity.this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 15));
                 }
+
+                MapActivity.this.updateNetworkLocation(position);
             }
         }, Looper.getMainLooper());
+    }
+
+    private void updateNetworkLocation(LatLng position) {
+        String deviceId = Settings.Secure.getString(this.getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("users")
+                .whereEqualTo("device", deviceId)
+                .get().addOnSuccessListener(task -> {
+                    task.forEach(document -> {
+                        DocumentReference reference = db.collection("users").document(document.getId());
+                        reference.update("longitute", position.longitude, "latitude", position.latitude);
+
+                        MapActivity.this.updateOtherMarkers(document.getString("roomCode"));
+                    });
+                });
+    }
+
+    private void updateOtherMarkers(String roomCode) {
+        String deviceId = Settings.Secure.getString(this.getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("users")
+                .whereNotEqualTo("device", deviceId)
+                .whereEqualTo("roomCode", roomCode)
+                .get().addOnSuccessListener(task -> {
+                    for (Marker marker : this.otherMarkers) {
+                        marker.remove();
+                    }
+                    this.otherMarkers.clear();
+
+                    task.forEach(document -> {
+                        String base64Avatar = document.getString("base64Image");
+                        BitmapDescriptor avatar = this.getAvatar(base64Avatar);
+                        MarkerOptions options = new MarkerOptions()
+                                .title(document.getString("name"))
+                                .position(new LatLng(document.getDouble("latitude"), document.getDouble("longitude")));
+                        if (avatar != null) {
+                            options.icon(avatar);
+                        }
+
+                        Marker marker = this.googleMap.addMarker(options);
+                        this.otherMarkers.add(marker);
+                    });
+                });
+    }
+
+    private void loadAvatar() {
+        String deviceId = Settings.Secure.getString(this.getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("users")
+                .whereEqualTo("device", deviceId)
+                .get().addOnSuccessListener(task -> {
+            if (task.getDocuments().size() > 0) {
+                DocumentSnapshot documentSnapshot = task.getDocuments().get(0);
+                String base64Avatar = documentSnapshot.getString("base64Image");
+                BitmapDescriptor descriptor = this.getAvatar(base64Avatar);
+                if (descriptor != null) {
+                    this.userMarker.setIcon(descriptor);
+                }
+            }
+        });
+    }
+
+    private BitmapDescriptor getAvatar(String base64) {
+        if (base64.length() > 0) {
+            byte[] decoded = Base64.decode(base64, 0);
+
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inMutable = false;
+            Bitmap image = BitmapFactory.decodeByteArray(decoded, 0, decoded.length, options);
+            image = Bitmap.createScaledBitmap(image, 128, 128, true);
+            return BitmapDescriptorFactory.fromBitmap(image);
+        } else {
+            return null;
+        }
     }
 
 }
