@@ -31,15 +31,10 @@ public class MainActivity extends AppCompatActivity {
 //        Intent switchToMapActivity = new Intent(this, MapActivity.class);
 //        this.startActivity(switchToMapActivity);
         addUser("ABC123", "Weiwei");
-    }
-    @Override
-    protected void onStop() {
-        System.out.println("I HAVE BEEN DEFEATED CURSE MUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU");
-        removeUser("ABC123","Weiwei");
-        super.onStop();
+//        removeUser("ABC123", "Weiwei");
+
 
     }
-
     public void addUser(String roomcode, String name){
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         Senpai user = new Senpai();
@@ -62,7 +57,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
     public void removeUser(String roomcode, String name){
-        System.out.println("Removing user");
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("users")
                 .whereEqualTo("name", name).whereEqualTo("roomCode",roomcode)
