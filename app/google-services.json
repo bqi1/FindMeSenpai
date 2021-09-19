@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "833717932955",
+    "project_id": "findmysenpai2",
+    "storage_bucket": "findmysenpai2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:833717932955:android:22a43dfb0ec35d9d95873e",
+        "android_client_info": {
+          "package_name": "com.example.findmysenpai2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "833717932955-nb2m15oe5am9nflo4sojs4almslkntmn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCA-g4gCR5C1oG72J_7a0ks7o6bHMmZXqg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "833717932955-nb2m15oe5am9nflo4sojs4almslkntmn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
