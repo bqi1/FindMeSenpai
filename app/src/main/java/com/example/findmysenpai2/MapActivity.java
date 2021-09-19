@@ -61,21 +61,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public void onMapReady(@NonNull GoogleMap googleMap) {
         this.googleMap = googleMap;
         this.forceLocationPermissions();
-
-        // Starting location on the map is wherever we are.
-        FusedLocationProviderClient provider = LocationServices.getFusedLocationProviderClient(this);
-        provider.getLastLocation().addOnCompleteListener(locationTask -> {
-            Location location = locationTask.getResult();
-            LatLng position = new LatLng(location.getLatitude(), location.getLongitude());
-            this.updateNetworkLocation(position);
-
-            this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 15));
-            this.userMarker = googleMap.addMarker(new MarkerOptions().position(position).title("Me"));
-            this.loadAvatar();
-
-            // Listen for whenever our location changes and update the marker accordingly
-            this.startUserLocationTask();
-        });
+        this.startUserLocationTask();
     }
 
     private void forceLocationPermissions() {
@@ -92,6 +78,17 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         provider.requestLocationUpdates(LocationRequest.create().setInterval(REQUEST_LOCATION_INTERVAL), new LocationCallback() {
             @Override
             public void onLocationResult(@NonNull LocationResult locationResult) {
+                if (MapActivity.this.userMarker == null) {
+                    // First time retrieving map data
+                    Location location = locationResult.getLastLocation();
+                    LatLng position = new LatLng(location.getLatitude(), location.getLongitude());
+
+                    MapActivity.this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 15));
+                    MapActivity.this.userMarker = googleMap.addMarker(new MarkerOptions().position(position).title("Me"));
+                    MapActivity.this.loadAvatar();
+                }
+
+
                 Marker currentUserMarker = MapActivity.this.userMarker;
                 Location location = locationResult.getLastLocation();
 
