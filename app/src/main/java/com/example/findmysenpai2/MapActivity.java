@@ -119,7 +119,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 .get().addOnSuccessListener(task -> {
                     task.forEach(document -> {
                         DocumentReference reference = db.collection("users").document(document.getId());
-                        reference.update("longitute", position.longitude, "latitude", position.latitude);
+                        reference.update("longitude", position.longitude, "latitude", position.latitude);
 
                         MapActivity.this.updateOtherMarkers(document.getString("roomCode"));
                     });
