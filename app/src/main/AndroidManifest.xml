@@ -33,7 +33,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".MapActivity"></activity>
-        <activity android:name=".UserActivity"></activity>
     </application>
 
 </manifest>

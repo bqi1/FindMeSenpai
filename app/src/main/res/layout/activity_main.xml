@@ -6,6 +6,16 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <ImageView
+        android:id="@+id/upload_avatar"
+        android:layout_width="176dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <Button
         android:id="@+id/save_button"
         android:layout_width="200dp"
@@ -27,14 +37,14 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="147dp"
         android:ems="10"
+        android:hint="Display Name"
         android:inputType="textPersonName"
         android:minHeight="48dp"
         app:layout_constraintBottom_toTopOf="@+id/save_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/room_name"
-        android:hint="Display Name"/>
+        app:layout_constraintTop_toBottomOf="@+id/room_name" />
 
     <EditText
         android:id="@+id/room_name"
@@ -43,12 +53,12 @@
         android:layout_marginTop="155dp"
         android:layout_marginBottom="113dp"
         android:ems="10"
+        android:hint="Room Code"
         android:inputType="textPersonName"
         android:minHeight="48dp"
         app:layout_constraintBottom_toTopOf="@+id/display_name"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:hint="Room Code"/>
+        app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>
