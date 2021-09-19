@@ -33,7 +33,12 @@ public class MainActivity extends AppCompatActivity {
         addUser("ABC123", "Weiwei");
 //        removeUser("ABC123", "Weiwei");
 
-
+    }
+    @Override
+    protected void onStop(){
+        super.onStop();
+        removeUser("ABC123","Weiwei");
+        System.out.println("EPICCCCCCCCCCCCCCc");
     }
     public void addUser(String roomcode, String name){
         FirebaseFirestore db = FirebaseFirestore.getInstance();
