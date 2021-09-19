@@ -3,9 +3,15 @@ package com.example.findmysenpai2;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.findmysenpai2.Senpai;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -28,18 +34,38 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         Log.d("TESTINGPASTA", "KILLLME");
         this.setContentView(R.layout.activity_main);
-//        Intent switchToMapActivity = new Intent(this, MapActivity.class);
-//        this.startActivity(switchToMapActivity);
-        addUser("ABC123", "Weiwei");
-//        removeUser("ABC123", "Weiwei");
+//
+        final Button button = findViewById(R.id.save_button);
+        final EditText roomText = (EditText) findViewById(R.id.room_name);
+        final EditText displayNameText = (EditText) findViewById(R.id.display_name);
+        button.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                // Code here executes on main thread after user presses button
+                System.out.println(roomText.getText().toString() + " annnnd " + displayNameText.getText().toString());
+                if ((roomText.getText().toString().matches("")) || (displayNameText.getText().toString().matches(""))){
+                    Context context = getApplicationContext();
+                    CharSequence text = "Fill in all fields. baka";
+                    int duration = Toast.LENGTH_SHORT;
+                    Toast toast = Toast.makeText(context, text, duration);
+                    toast.show();
+                }else{
+                    addUser(roomText.getText().toString(), displayNameText.getText().toString());
+                    Intent switchToMapActivity = new Intent(MainActivity.this, MapActivity.class);
+                    MainActivity.this.startActivity(switchToMapActivity);
+
+                }
+            }
+        });
+
 
     }
-    @Override
-    protected void onStop(){
-        super.onStop();
-        removeUser("ABC123","Weiwei");
-        System.out.println("EPICCCCCCCCCCCCCCc");
-    }
+//    @Override
+//    protected void onStop(){
+//        super.onStop();
+//        final EditText roomText = (EditText) findViewById(R.id.room_name);
+//        final EditText displayNameText = (EditText) findViewById(R.id.display_name);
+//        removeUser(roomText.getText().toString(),displayNameText.getText().toString());
+//    }
     public void addUser(String roomcode, String name){
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         Senpai user = new Senpai();
