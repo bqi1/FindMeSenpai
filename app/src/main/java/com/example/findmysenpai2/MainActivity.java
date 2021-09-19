@@ -45,21 +45,27 @@ public class MainActivity extends AppCompatActivity {
         Senpai user = new Senpai();
         user.name = name;
         user.roomCode = roomcode;
-        db.collection("users")
-                .add(user)
-                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                    @Override
-                    public void onSuccess(DocumentReference documentReference) {
-                        Log.d("TESTINGPASTA", "DocumentSnapshot added with ID: " + documentReference.getId());
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w("TESTINGPASTA", "Error adding document", e);
-                    }
-                });
 
+        // Delete old users associated with device id
+        db.collection("users").whereEqualTo("device", user.device).get().addOnSuccessListener(task -> {
+            task.getDocuments().forEach(document -> db.collection("users").document(document.getId()).delete());
+
+            // Add new user
+            db.collection("users")
+                    .add(user)
+                    .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                        @Override
+                        public void onSuccess(DocumentReference documentReference) {
+                            Log.d("TESTINGPASTA", "DocumentSnapshot added with ID: " + documentReference.getId());
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.w("TESTINGPASTA", "Error adding document", e);
+                        }
+                    });
+        });
     }
     public void removeUser(String roomcode, String name){
         FirebaseFirestore db = FirebaseFirestore.getInstance();
