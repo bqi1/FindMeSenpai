@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
@@ -33,6 +34,8 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -161,9 +164,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             if (task.getDocuments().size() > 0) {
                 DocumentSnapshot documentSnapshot = task.getDocuments().get(0);
                 String base64Avatar = documentSnapshot.getString("base64Image");
-                BitmapDescriptor descriptor = this.getAvatar(base64Avatar);
-                if (descriptor != null) {
-                    this.userMarker.setIcon(descriptor);
+                BitmapDescriptor avatar = this.getAvatar(base64Avatar);
+                if (avatar != null) {
+                    this.userMarker.setIcon(avatar);
                 }
                 this.userMarker.setTitle(documentSnapshot.getString("name"));
             }
@@ -171,17 +174,24 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private BitmapDescriptor getAvatar(String base64) {
+        Bitmap image;
         if (base64.length() > 0) {
             byte[] decoded = Base64.decode(base64, 0);
 
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inMutable = false;
-            Bitmap image = BitmapFactory.decodeByteArray(decoded, 0, decoded.length, options);
-            image = Bitmap.createScaledBitmap(image, 128, 128, true);
-            return BitmapDescriptorFactory.fromBitmap(image);
+            image = BitmapFactory.decodeByteArray(decoded, 0, decoded.length, options);
         } else {
-            return null;
+            try (InputStream defaultStream = this.getAssets().open("default_avatar.PNG")) {
+                byte[] bytes = new byte[defaultStream.available()];
+                defaultStream.read(bytes);
+                image = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+            } catch (IOException ignored) {
+                return null;
+            }
         }
+        image = Bitmap.createScaledBitmap(image, 128, 128, true);
+        return BitmapDescriptorFactory.fromBitmap(image);
     }
 
 }
