@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -61,37 +62,38 @@ public class MainActivity extends AppCompatActivity {
 //        final EditText displayNameText = (EditText) findViewById(R.id.display_name);
 //        removeUser(roomText.getText().toString(),displayNameText.getText().toString());
 //    }
-    public void addUser(String roomcode, String name){
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        Senpai user = new Senpai();
-        user.name = name;
-        user.roomCode = roomcode;
+public void addUser(String roomcode, String name){
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
+    Senpai user = new Senpai();
+    user.device = Settings.Secure.getString(this.getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+    user.name = name;
+    user.roomCode = roomcode;
 
-        // Delete old users associated with device id
-        db.collection("users").whereEqualTo("device", user.device).get().addOnSuccessListener(task -> {
-            task.getDocuments().forEach(document -> db.collection("users").document(document.getId()).delete());
+    // Delete old users associated with device id
+    db.collection("users").whereEqualTo("device", user.device).get().addOnSuccessListener(task -> {
+        task.getDocuments().forEach(document -> db.collection("users").document(document.getId()).delete());
 
-            // Add new user
-            db.collection("users")
-                    .add(user)
-                    .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                        @Override
-                        public void onSuccess(DocumentReference documentReference) {
-                            Log.d("TESTINGPASTA", "DocumentSnapshot added with ID: " + documentReference.getId());
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Log.w("TESTINGPASTA", "Error adding document", e);
-                        }
-                    });
-        });
-    }
-    public void removeUser(String roomcode, String name){
+        // Add new user
+        db.collection("users")
+                .add(user)
+                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                    @Override
+                    public void onSuccess(DocumentReference documentReference) {
+                        Log.d("TESTINGPASTA", "DocumentSnapshot added with ID: " + documentReference.getId());
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w("TESTINGPASTA", "Error adding document", e);
+                    }
+                });
+    });
+}
+    public void removeUser(String roomcode, String device){
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("users")
-                .whereEqualTo("name", name).whereEqualTo("roomCode",roomcode)
+                .whereEqualTo("device", device).whereEqualTo("roomCode",roomcode)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
