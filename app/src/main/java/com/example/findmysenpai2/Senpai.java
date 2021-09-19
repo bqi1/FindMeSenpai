@@ -6,11 +6,6 @@ import java.util.UUID;
 public class Senpai {
     public String roomCode = "";
     public String name = "";
-    public void setPicture(){
-
-    }
-    public void getPicture(){
-
-    }
-
+    public String device = "";
+    public String base64Image = "";
 }

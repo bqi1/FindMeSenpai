@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 
 import com.example.findmysenpai2.Senpai;
@@ -38,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     public void addUser(String roomcode, String name){
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         Senpai user = new Senpai();
+        user.device = Settings.Secure.getString(this.getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
         user.name = name;
         user.roomCode = roomcode;
         db.collection("users")
@@ -56,10 +58,10 @@ public class MainActivity extends AppCompatActivity {
                 });
 
     }
-    public void removeUser(String roomcode, String name){
+    public void removeUser(String roomcode, String device){
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("users")
-                .whereEqualTo("name", name).whereEqualTo("roomCode",roomcode)
+                .whereEqualTo("device", device).whereEqualTo("roomCode",roomcode)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
